@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SubSync -- Subscription Calendar</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="./favicon-sub.png" />
+  <link rel="shortcut icon" href="./favicon-sub.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- Loading Overlay -->
+  <div class="loader-overlay" id="loader-overlay">
+    <div class="loader-content">
+      <img class="loader-logo" src="./logos.png" alt="SubSync" />
+      <div class="loader-bar-track">
+        <div class="loader-bar-fill" id="loader-bar-fill"></div>
+      </div>
+      <div class="loader-percent" id="loader-percent">0%</div>
+    </div>
+  </div>
+
+  <div class="app">
+
+    <!-- -------------------------------------------------------
+         SECTION 2: Header — Logo + Add button
+         ------------------------------------------------------- -->
+    <header>
+      <div class="logo">
+        <img class="loader-logo" src="./logos.png" alt="SubSync" />
+      </div>
+      <div class="header-actions">
+        <div class="theme-switch" aria-label="Theme switcher">
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode"
+            title="Switch theme" onclick="toggleTheme()">☀</button>
+        </div>
+        <button class="add-btn" onclick="openModal()">+ Add Subscription</button>
+      </div>
+    </header>
+
+    <!-- -------------------------------------------------------
+         SECTION 3: Stats bar — 3 summary cards
+         IDs are targeted by JS to update values dynamically
+         ------------------------------------------------------- -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Monthly Cost</div>
+        <div class="stat-value green" id="stat-cost">&#8358;0.00</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Subs</div>
+        <div class="stat-value blue" id="stat-count">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Expiring Soon</div>
+        <div class="stat-value red" id="stat-alerts">0</div>
+      </div>
+    </div>
+
+    <!-- -------------------------------------------------------
+         SECTION 4: Main content — Calendar + Sidebar
+         ------------------------------------------------------- -->
+    <div class="main">
+
+      <!-- Calendar panel (left column) -->
+      <div class="calendar-wrap">
+
+        <!-- Month title and nav arrows -->
+        <div class="cal-header">
+          <div class="cal-title" id="cal-title">Month Year</div>
+          <div class="nav-btns">
+            <button class="nav-btn" onclick="changeMonth(-1)">&#8592;</button> <!-- ← -->
+            <button class="nav-btn" onclick="changeMonth(1)">&#8594;</button> <!-- → -->
+          </div>
+        </div>
+
+        <!-- Day name headers: Sun Mon Tue Wed Thu Fri Sat -->
+        <div class="day-names">
+          <div class="day-name">Sun</div>
+          <div class="day-name">Mon</div>
+          <div class="day-name">Tue</div>
+          <div class="day-name">Wed</div>
+          <div class="day-name">Thu</div>
+          <div class="day-name">Fri</div>
+          <div class="day-name">Sat</div>
+        </div>
+
+        <!-- Calendar grid — JS fills this with day cells -->
+        <div class="cal-grid" id="cal-grid"></div>
+
+      </div><!-- end .calendar-wrap -->
+
+      <!-- Sidebar (right column) -->
+      <div class="sidebar">
+
+        <!-- My Subscriptions panel — JS fills #sub-list -->
+        <div class="panel">
+          <div class="panel-title">My Subscriptions</div>
+          <div class="sub-list" id="sub-list">
+            <!-- Default empty state shown before JS runs -->
+            <div class="empty-state">
+              <div class="big">📭</div>
+              No subscriptions yet
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerts panel — JS fills #alert-list -->
+        <div class="panel">
+          <div class="panel-title">⚠️ Alerts</div>
+          <div class="alert-list" id="alert-list">
+            <!-- Default message shown before JS runs -->
+            <div class="no-alerts">No upcoming renewals</div>
+          </div>
+        </div>
+
+      </div><!-- end .sidebar -->
+
+    </div><!-- end .main -->
+
+  </div><!-- end .app -->
+
+
+  <!-- --------------------------------------------------------
+       SECTION 5: Modal — Add Subscription form
+       Lives outside .app so it overlays the full screen
+       Hidden by default; JS adds .open class to show it
+       -------------------------------------------------------- -->
+  <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+    <div class="modal">
+
+      <div class="modal-title">Add Subscription</div>
+
+      <!-- Service name input -->
+      <div class="form-group">
+        <label>Service Name</label>
+        <input type="text" id="f-name" placeholder="e.g. Netflix">
+      </div>
+      <!-- Price input -->
+      <div class="form-group">
+        <label>Price (per month)</label>
+        <input type="number" id="f-price" placeholder="e.g. 7500" step="0.01">
+      </div>
+
+      <!-- Two-column row: Billing Day + Alert Window -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Billing Day</label>
+          <input type="number" id="f-day" placeholder="1–28" min="1" max="28">
+        </div>
+        <div class="form-group">
+          <label>Alert (days before)</label>
+          <select id="f-alert">
+            <option value="1">1 day</option>
+            <option value="3" selected>3 days</option>
+            <option value="5">5 days</option>
+            <option value="7">1 week</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Cancel + Save buttons -->
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" onclick="addSubscription()">Save</button>
+      </div>
+
+    </div><!-- end .modal -->
+  </div><!-- end .modal-overlay -->
+
+  <script src="script.js"></script>
+</body>
+
+</html>
+
