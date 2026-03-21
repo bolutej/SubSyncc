@@ -1,178 +1,170 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bungee&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="./icons/favicon-sub.png"
+    />
+    <link rel="shortcut icon" href="./icons/favicon-sub.png" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="home-page">
+    <div class="container home-container">
+      <nav>
+        <h1>
+          <a href="index.html"><img src="./icons/logos.png" alt="SubSync" /></a>
+        </h1>
+      </nav>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SubSync -- Subscription Calendar</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="./favicon-sub.png" />
-  <link rel="shortcut icon" href="./favicon-sub.png" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-
-<body>
-
-  <!-- Loading Overlay -->
-  <div class="loader-overlay" id="loader-overlay">
-    <div class="loader-content">
-      <img class="loader-logo" src="./logos.png" alt="SubSync" />
-      <div class="loader-bar-track">
-        <div class="loader-bar-fill" id="loader-bar-fill"></div>
+      <div class="hero">
+        <h1>SUBSYNC</h1>
+        <span class="hero-tagline"
+          >Never lose track of what you're paying for.
+        </span>
+        <p>
+          SubSync gives you a clear, real-time view of every subscription in
+          your life. See exactly how much you spend each month, get notified
+          before renewals hit, and cancel what you do not need. No more
+          surprise charges or forgotten free trials turning into paid plans.
+          Take control of your spending.
+        </p>
       </div>
-      <div class="loader-percent" id="loader-percent">0%</div>
+
+      <button class="cta" id="google-btn">
+        <span class="cta-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 48 48"
+            xmlns="http://www.w3.org/2000/svg"
+            focusable="false"
+          >
+            <path
+              fill="#000000"
+              d="M24 9.5c3.1 0 5.9 1.1 8.1 3.2l6-6C34.5 3.1 29.7 1 24 1 14.8 1 6.9 6.4 3.2 14.2l7.1 5.5C12.3 13.6 17.7 9.5 24 9.5z"
+            />
+            <path
+              fill="#000000"
+              d="M46.1 24.5c0-1.7-.2-3.3-.6-4.9H24v9.3h12.3c-.5 2.7-2 5-4.3 6.6l6.6 5.1c3.9-3.6 6.1-8.8 6.1-16.1z"
+            />
+            <path
+              fill="#000000"
+              d="M10.3 28.7c-.6-1.7-1-3.4-1-5.2s.3-3.5 1-5.2l-7.1-5.5C1.2 16.4 0 20.1 0 23.5s1.2 7.1 3.2 10.7l7.1-5.5z"
+            />
+            <path
+              fill="#000000"
+              d="M24 46c5.7 0 10.5-1.9 14-5.4l-6.6-5.1c-1.8 1.2-4.1 2-7.4 2-6.3 0-11.7-4.1-13.7-9.8l-7.1 5.5C6.9 41.6 14.8 46 24 46z"
+            />
+          </svg>
+        </span>
+        <span class="cta-text">Continue with Google</span>
+      </button>
+
+      <video autoplay muted loop playsinline width="1200rem" height="675rem" style="border-radius: 20px;">
+  <source src="SubSync.mp4" type="video/mp4">
+</video>
+
+      <h1 class="grid-quote">
+        Everything you need to stay <span>in control of your spending</span>
+      </h1>
+
+      <div class="grid-temp">
+        <div>
+          <p>CORE</p>
+          <h1>Track Every Subscription</h1>
+          <p>
+            See all your subscriptions in one place - Netflix, Spotify, SaaS
+            tools, and more. Never lose track of what you're paying for.
+          </p>
+        </div>
+        <div>
+          <p>ALERTS</p>
+          <h1>Smart Renewal Alerts</h1>
+          <p>
+            Get email notifications before you're charged. Set reminders days in advance so you can cancel or budget ahead of time.
+          </p>
+        </div>
+        <div>
+          <p>INSIGHTS</p>
+          <h1>Monthly Spend Overview</h1>
+          <p>
+            See where your money is going at a glance. Track your monthly and yearly spend, and finally uncover those forgotten subscriptions draining your wallet.
+          </p>
+        </div>
+        <div>
+          <p>ORGANIZE</p>
+          <h1>Organize by Category</h1>
+          <p>
+            Sort subscriptions by entertainment, work, health, and more.
+            Understand exactly where your money goes.
+          </p>
+        </div>
+      </div>
+
+      <footer class="site-footer">
+        <div class="site-footer__inner">
+          <p class="site-footer__copy">&copy; 2026 SubSync. All rights reserved.</p>
+          <div class="site-footer__links">
+            <a
+              class="site-footer__link"
+              href="https://bolutej.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Built by</a
+            >
+            <a
+              class="site-footer__twitter"
+              href="https://bolutej.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Bolu.dev</a
+            >
+            <span class="site-footer__dot">&bull;</span>
+            <a class="site-footer__link" href="mailto:support@marquee.app"
+              >Contact</a
+            >
+            <span class="site-footer__dot">&bull;</span>
+            <a
+              class="site-footer__icon"
+              href="https://twitter.com/BoluTejumola"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="X (Twitter)"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
-  </div>
-
-  <div class="app">
-
-    <!-- -------------------------------------------------------
-         SECTION 2: Header — Logo + Add button
-         ------------------------------------------------------- -->
-    <header>
-      <div class="logo">
-        <img class="loader-logo" src="./logos.png" alt="SubSync" />
-      </div>
-      <div class="header-actions">
-        <div class="theme-switch" aria-label="Theme switcher">
-          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode"
-            title="Switch theme" onclick="toggleTheme()">☀</button>
-        </div>
-        <button class="add-btn" onclick="openModal()">+ Add Subscription</button>
-      </div>
-    </header>
-
-    <!-- -------------------------------------------------------
-         SECTION 3: Stats bar — 3 summary cards
-         IDs are targeted by JS to update values dynamically
-         ------------------------------------------------------- -->
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-label">Monthly Cost</div>
-        <div class="stat-value green" id="stat-cost">&#8358;0.00</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Active Subs</div>
-        <div class="stat-value blue" id="stat-count">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Expiring Soon</div>
-        <div class="stat-value red" id="stat-alerts">0</div>
-      </div>
-    </div>
-
-    <!-- -------------------------------------------------------
-         SECTION 4: Main content — Calendar + Sidebar
-         ------------------------------------------------------- -->
-    <div class="main">
-
-      <!-- Calendar panel (left column) -->
-      <div class="calendar-wrap">
-
-        <!-- Month title and nav arrows -->
-        <div class="cal-header">
-          <div class="cal-title" id="cal-title">Month Year</div>
-          <div class="nav-btns">
-            <button class="nav-btn" onclick="changeMonth(-1)">&#8592;</button> <!-- ← -->
-            <button class="nav-btn" onclick="changeMonth(1)">&#8594;</button> <!-- → -->
-          </div>
-        </div>
-
-        <!-- Day name headers: Sun Mon Tue Wed Thu Fri Sat -->
-        <div class="day-names">
-          <div class="day-name">Sun</div>
-          <div class="day-name">Mon</div>
-          <div class="day-name">Tue</div>
-          <div class="day-name">Wed</div>
-          <div class="day-name">Thu</div>
-          <div class="day-name">Fri</div>
-          <div class="day-name">Sat</div>
-        </div>
-
-        <!-- Calendar grid — JS fills this with day cells -->
-        <div class="cal-grid" id="cal-grid"></div>
-
-      </div><!-- end .calendar-wrap -->
-
-      <!-- Sidebar (right column) -->
-      <div class="sidebar">
-
-        <!-- My Subscriptions panel — JS fills #sub-list -->
-        <div class="panel">
-          <div class="panel-title">My Subscriptions</div>
-          <div class="sub-list" id="sub-list">
-            <!-- Default empty state shown before JS runs -->
-            <div class="empty-state">
-              <div class="big">📭</div>
-              No subscriptions yet
-            </div>
-          </div>
-        </div>
-
-        <!-- Alerts panel — JS fills #alert-list -->
-        <div class="panel">
-          <div class="panel-title">⚠️ Alerts</div>
-          <div class="alert-list" id="alert-list">
-            <!-- Default message shown before JS runs -->
-            <div class="no-alerts">No upcoming renewals</div>
-          </div>
-        </div>
-
-      </div><!-- end .sidebar -->
-
-    </div><!-- end .main -->
-
-  </div><!-- end .app -->
-
-
-  <!-- --------------------------------------------------------
-       SECTION 5: Modal — Add Subscription form
-       Lives outside .app so it overlays the full screen
-       Hidden by default; JS adds .open class to show it
-       -------------------------------------------------------- -->
-  <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
-    <div class="modal">
-
-      <div class="modal-title">Add Subscription</div>
-
-      <!-- Service name input -->
-      <div class="form-group">
-        <label>Service Name</label>
-        <input type="text" id="f-name" placeholder="e.g. Netflix">
-      </div>
-      <!-- Price input -->
-      <div class="form-group">
-        <label>Price (per month)</label>
-        <input type="number" id="f-price" placeholder="e.g. 7500" step="0.01">
-      </div>
-
-      <!-- Two-column row: Billing Day + Alert Window -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>Billing Day</label>
-          <input type="number" id="f-day" placeholder="1–28" min="1" max="28">
-        </div>
-        <div class="form-group">
-          <label>Alert (days before)</label>
-          <select id="f-alert">
-            <option value="1">1 day</option>
-            <option value="3" selected>3 days</option>
-            <option value="5">5 days</option>
-            <option value="7">1 week</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Cancel + Save buttons -->
-      <div class="modal-actions">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn-save" onclick="addSubscription()">Save</button>
-      </div>
-
-    </div><!-- end .modal -->
-  </div><!-- end .modal-overlay -->
-
-  <script src="script.js"></script>
-</body>
-
+    <script type="module" src="auth.js"></script>
+  </body>
 </html>
-
