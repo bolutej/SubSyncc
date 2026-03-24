@@ -49,7 +49,7 @@ if (currentPage.includes('index') || currentPage === '/') {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'http://127.0.0.1:5502/dashboard.html'
+        redirectTo: `${window.location.origin}/dashboard.html`
       }
     })
     if (error) {
