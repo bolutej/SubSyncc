@@ -1,7 +1,3 @@
-let currentDate = new Date();
-let viewYear = currentDate.getFullYear();
-let viewMonth = currentDate.getMonth();
-
 const knownServiceDomains = {
   netflix: "netflix.com",
   icloud: "icloud.com",
@@ -98,35 +94,43 @@ async function addSubscription() {
   const cycle = String(document.getElementById("f-cycle")?.value || "monthly");
   const category = String(document.getElementById("f-category")?.value || "");
 
-  if (!name || isNaN(price) || price <= 0 || isNaN(day) || day < 1 || day > 28) {
-    alert("Please fill in all fields correctly (billing day must be 1-28)");
+  if (!name || isNaN(price) || price <= 0 || isNaN(day) || day < 1 || day > 31) {
+    alert("Please fill in all fields correctly (billing day must be 1-31)");
     return;
   }
 
-  const newSub = await window.dbFunctions.addSubscriptionDB({
-    name,
-    price,
-    day,
-    alertDays,
-    cycle,
-    category,
-    iconUrl: resolveServiceIconUrl(name),
-  });
-
-  if (newSub) {
-    subscriptions.push({
-      id: newSub.id,
-      name: newSub.name,
-      price: newSub.price,
-      day: newSub.day,
-      alertDays: newSub.alert_days,
-      cycle: newSub.cycle || cycle,
-      category: newSub.category || category,
-      iconUrl: newSub.icon_url,
+  let newSub = null;
+  try {
+    newSub = await window.dbFunctions.addSubscriptionDB({
+      name,
+      price,
+      day,
+      alertDays,
+      cycle,
+      category,
+      iconUrl: resolveServiceIconUrl(name),
     });
-    closeModal();
-    renderAll();
+  } catch (error) {
+    console.error("Add subscription failed:", error);
   }
+
+  if (!newSub) {
+    alert("Could not add subscription. Please try again.");
+    return;
+  }
+
+  subscriptions.push({
+    id: newSub.id,
+    name: newSub.name,
+    price: newSub.price,
+    day: newSub.day,
+    alertDays: newSub.alert_days,
+    cycle: newSub.cycle || cycle,
+    category: newSub.category || category,
+    iconUrl: newSub.icon_url,
+  });
+  closeModal();
+  renderAll();
 }
 
 // -----------------------------------------------------------
@@ -142,12 +146,9 @@ async function deleteSubscription(id) {
 // 6. RENDER ALL (master update function)
 // -----------------------------------------------------------
 function renderAll() {
-  renderCalendar();
   renderSubList();
-  renderAlerts();
   renderNotificationBell();
   renderStats();
-  renderSpendOverview();
   renderSpendingChart();
   renderCategoryBreakdown();
 }
@@ -210,10 +211,16 @@ function markAllUpcomingNotificationsSeen() {
 // 7. RENDER STATS BAR
 // -----------------------------------------------------------
 function renderStats() {
-  // Add up all prices
-  const total = subscriptions.reduce((acc, s) => acc + s.price, 0);
+  // Monthly total normalized across billing cycles.
+  const total = subscriptions.reduce(
+    (acc, s) => acc + getMonthlyEquivalentPrice(s),
+    0,
+  );
   const statCost = document.getElementById("stat-cost");
   if (statCost) statCost.textContent = formatCurrency(total);
+
+  const statYearly = document.getElementById("stat-yearly");
+  if (statYearly) statYearly.textContent = formatCurrency(total * 12);
 
   // Count total subscriptions
   const statCount = document.getElementById("stat-count");
@@ -223,153 +230,6 @@ function renderStats() {
   const alerts = getUpcomingRenewals();
   const statAlerts = document.getElementById("stat-alerts");
   if (statAlerts) statAlerts.textContent = alerts.length;
-}
-
-// -----------------------------------------------------------
-// 7B. RENDER SPEND OVERVIEW
-// -----------------------------------------------------------
-function renderSpendOverview() {
-  const monthlyEl = document.getElementById("spend-monthly");
-  const annualEl = document.getElementById("spend-annual");
-  const avgEl = document.getElementById("spend-average");
-  const breakdownEl = document.getElementById("spend-breakdown");
-  const projectedEl = document.getElementById("spend-projected");
-  const upcomingEl = document.getElementById("spend-upcoming");
-  const upcomingLabelEl = document.getElementById("spend-upcoming-label");
-  const trendEl = document.getElementById("spend-trend");
-  const trendLabelEl = document.getElementById("spend-trend-label");
-  const highestEl = document.getElementById("spend-highest");
-  const highestLabelEl = document.getElementById("spend-highest-label");
-
-  if (
-    !monthlyEl &&
-    !annualEl &&
-    !avgEl &&
-    !breakdownEl &&
-    !projectedEl &&
-    !upcomingEl &&
-    !trendEl &&
-    !highestEl
-  ) {
-    return;
-  }
-
-  const totalMonthly = subscriptions.reduce(
-    (acc, s) => acc + Number(s.price || 0),
-    0,
-  );
-  const annualTotal = totalMonthly * 12;
-  const average = subscriptions.length
-    ? totalMonthly / subscriptions.length
-    : 0;
-
-  if (monthlyEl) monthlyEl.textContent = formatCurrency(totalMonthly);
-  if (annualEl) annualEl.textContent = formatCurrency(annualTotal);
-  if (avgEl) avgEl.textContent = formatCurrency(average);
-  if (projectedEl) projectedEl.textContent = formatCurrency(annualTotal);
-
-  if (breakdownEl) {
-    if (subscriptions.length === 0) {
-      breakdownEl.innerHTML = `
-        <div class="sub-item">
-          <div class="sub-info">
-            <div class="sub-name">No data yet</div>
-            <div class="sub-date">Add subscriptions to see a breakdown</div>
-          </div>
-          <div class="sub-price">${formatCurrency(0)}</div>
-        </div>`;
-    } else {
-      const sorted = [...subscriptions].sort((a, b) => b.price - a.price);
-      breakdownEl.innerHTML = sorted
-        .map((s) => {
-          const share = totalMonthly > 0 ? (s.price / totalMonthly) * 100 : 0;
-          const iconUrl = escapeHTML(
-            s.iconUrl || resolveServiceIconUrl(s.name),
-          );
-          return `
-          <div class="sub-item">
-            <div class="sub-icon-lg">
-              <img class="service-icon-lg" src="${iconUrl}" alt="${escapeHTML(s.name)} icon">
-            </div>
-            <div class="sub-info">
-              <div class="sub-name">${escapeHTML(s.name)}</div>
-              <div class="sub-date">${share.toFixed(1)}% of monthly spend</div>
-            </div>
-            <div class="sub-price">${formatCurrency(s.price)}</div>
-          </div>`;
-        })
-        .join("");
-    }
-  }
-
-  if (highestEl || highestLabelEl) {
-    if (subscriptions.length === 0) {
-      if (highestEl) highestEl.textContent = formatCurrency(0);
-      if (highestLabelEl) highestLabelEl.textContent = "No subscriptions yet";
-    } else {
-      const highest = subscriptions.reduce(
-        (best, current) =>
-          current.price > (best?.price || 0) ? current : best,
-        null,
-      );
-
-      if (highestEl) highestEl.textContent = formatCurrency(highest.price);
-      if (highestLabelEl) highestLabelEl.textContent = highest.name;
-    }
-  }
-
-  const today = new Date();
-  const monthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
-  const prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-  const prevKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
-
-  let history = {};
-
-  const lastTotal = Number(history[prevKey]);
-  history[monthKey] = totalMonthly;
-
-  if (trendEl) {
-    if (lastTotal > 0) {
-      const delta = ((totalMonthly - lastTotal) / lastTotal) * 100;
-      trendEl.textContent = `${delta >= 0 ? "+" : ""}${delta.toFixed(1)}%`;
-    } else {
-      trendEl.textContent = "-";
-    }
-  }
-
-  if (trendLabelEl) {
-    if (lastTotal > 0) {
-      trendLabelEl.textContent = `Compared to ${prev.toLocaleDateString(
-        "en-NG",
-        {
-          month: "long",
-          year: "numeric",
-        },
-      )}`;
-    } else {
-      trendLabelEl.textContent = "No history for last month";
-    }
-  }
-
-  if (upcomingEl || upcomingLabelEl) {
-    const upcomingSubs = subscriptions.filter((s) => {
-      const next = getNextBillingDate(s);
-      return (
-        next.getMonth() === today.getMonth() &&
-        next.getFullYear() === today.getFullYear()
-      );
-    });
-    const upcomingTotal = upcomingSubs.reduce(
-      (acc, s) => acc + Number(s.price || 0),
-      0,
-    );
-    if (upcomingEl) upcomingEl.textContent = formatCurrency(upcomingTotal);
-    if (upcomingLabelEl) {
-      upcomingLabelEl.textContent = upcomingSubs.length
-        ? `${upcomingSubs.length} renewal${upcomingSubs.length === 1 ? "" : "s"} this month`
-        : "No renewals this month";
-    }
-  }
 }
 
 function getMonthlyEquivalentPrice(subscription) {
@@ -542,15 +402,24 @@ function getNextBillingDate(sub) {
   const year = today.getFullYear();
   const month = today.getMonth();
 
-  // Try this month's billing date first
-  let next = new Date(year, month, sub.day);
+  // Try this month's billing date first, clamped to the last valid day.
+  let next = getBillingDateForMonth(year, month, sub.day);
 
-  // If it's already passed, move to next month
+  // If it's already passed, move to next month.
   if (next <= today) {
-    next = new Date(year, month + 1, sub.day);
+    next = getBillingDateForMonth(year, month + 1, sub.day);
   }
 
   return next;
+}
+
+function getBillingDateForMonth(year, month, day) {
+  const rawDay = Number(day);
+  const safeDay = Number.isFinite(rawDay)
+    ? Math.max(1, Math.min(31, Math.trunc(rawDay)))
+    : 1;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  return new Date(year, month, Math.min(safeDay, daysInMonth));
 }
 
 // -----------------------------------------------------------
@@ -623,169 +492,6 @@ function renderSubList() {
       </div>`;
     })
     .join("");
-}
-
-// -----------------------------------------------------------
-// 10. RENDER ALERTS PANEL
-// -----------------------------------------------------------
-function renderAlerts() {
-  const list = document.getElementById("alert-list");
-  if (!list) return;
-  const upcoming = getUpcomingRenewals();
-
-  if (upcoming.length === 0) {
-    list.innerHTML = `
-      <div class="no-alerts">
-        <span class="icon icon--sm" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-            <path d="M22 4L12 14.01l-3-3"/>
-          </svg>
-        </span>
-        No upcoming renewals
-      </div>`;
-    return;
-  }
-
-  // Render each alert item; label is computed per subscription.
-  list.innerHTML = upcoming
-    .map((s) => {
-      const label =
-        s.daysLeft === 0
-          ? "Renews TODAY!"
-          : s.daysLeft === 1
-            ? "Renews tomorrow"
-            : `Renews in ${s.daysLeft} days`;
-      const iconUrl = escapeHTML(s.iconUrl || resolveServiceIconUrl(s.name));
-
-      return `
-      <div class="alert-item">
-        <div class="a-name"><img class="alert-icon" src="${iconUrl}" alt="${escapeHTML(s.name)} icon"> ${escapeHTML(s.name)}</div>
-        <div class="a-days">${label} - ${formatCurrency(s.price)}</div>
-      </div>`;
-    })
-    .join("");
-
-  // Fire browser notifications for same-day or next-day renewals
-  if ("Notification" in window && Notification.permission === "granted") {
-    upcoming.forEach((s) => {
-      // Only notify once per session using sessionStorage flag
-      if (s.daysLeft <= 1 && !sessionStorage.getItem("notified_" + s.id)) {
-        const noticeIcon = s.iconUrl || resolveServiceIconUrl(s.name);
-        new Notification(`SubTrack: ${s.name} renews soon!`, {
-          body: `${formatCurrency(s.price)} due ${s.daysLeft === 0 ? "today" : "tomorrow"}`,
-          icon: noticeIcon,
-        });
-        sessionStorage.setItem("notified_" + s.id, "1");
-      }
-    });
-  }
-}
-
-// -----------------------------------------------------------
-// 11. RENDER CALENDAR
-// -----------------------------------------------------------
-function renderCalendar() {
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  const titleEl = document.getElementById("cal-title");
-  const grid = document.getElementById("cal-grid");
-  if (!titleEl || !grid) return;
-  titleEl.textContent = `${months[viewMonth]} ${viewYear}`;
-  grid.innerHTML = ""; // clear previous cells
-
-  const today = new Date(); // declared here so all loops below can use it
-
-  // Calendar math
-  const firstDay = new Date(viewYear, viewMonth, 1).getDay(); // 0=Sun, 6=Sat
-  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate(); // last day of month
-  const prevDays = new Date(viewYear, viewMonth, 0).getDate(); // last day of prev month
-
-  // Build a lookup map: { day: [sub, sub, ...] }
-  const dayMap = {};
-  subscriptions.forEach((s) => {
-    if (!dayMap[s.day]) dayMap[s.day] = [];
-    dayMap[s.day].push(s);
-  });
-
-  // Build alert day map: days within each sub's alert window
-  const alertDayMap = {};
-  subscriptions.forEach((s) => {
-    const next = getNextBillingDate(s);
-    if (next.getMonth() === viewMonth && next.getFullYear() === viewYear) {
-      for (let i = 1; i <= s.alertDays; i++) {
-        const alertDay = next.getDate() - i;
-        if (alertDay > 0) {
-          if (!alertDayMap[alertDay]) alertDayMap[alertDay] = [];
-          alertDayMap[alertDay].push(s);
-        }
-      }
-    }
-  });
-
-  // --- LOOP 1: Blank cells from end of previous month ---
-  for (let i = firstDay - 1; i >= 0; i--) {
-    const cell = document.createElement("div");
-    cell.className = "cal-day other-month";
-    cell.innerHTML = `<div class="day-num">${prevDays - i}</div>`;
-    grid.appendChild(cell);
-  }
-
-  // --- LOOP 2: Current month days ---
-  for (let d = 1; d <= daysInMonth; d++) {
-    const cell = document.createElement("div");
-    const subs = dayMap[d] || [];
-    const hasAlert = alertDayMap[d] && alertDayMap[d].length > 0;
-    const isToday =
-      d === today.getDate() &&
-      viewMonth === today.getMonth() &&
-      viewYear === today.getFullYear();
-
-    cell.className =
-      "cal-day" +
-      (isToday ? " today" : "") +
-      (subs.length > 0 ? " has-sub" : "");
-
-    cell.innerHTML = `
-      <div class="day-num">${d}</div>
-      <div class="sub-icons">
-        ${subs
-          .map(
-            (s) => `
-          <div class="sub-icon">
-            <img class="service-icon-sm" src="${escapeHTML(s.iconUrl || resolveServiceIconUrl(s.name))}" alt="${escapeHTML(s.name)} icon">
-          </div>`,
-          )
-          .join("")}
-      </div>
-      ${hasAlert ? '<div class="alert-dot"></div>' : ""}`;
-
-    grid.appendChild(cell);
-  }
-
-  // --- LOOP 3: Blank cells for start of next month ---
-  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-  const remaining = totalCells - firstDay - daysInMonth;
-
-  for (let d = 1; d <= remaining; d++) {
-    const cell = document.createElement("div");
-    cell.className = "cal-day other-month";
-    cell.innerHTML = `<div class="day-num">${d}</div>`;
-    grid.appendChild(cell);
-  }
 }
 
 // -----------------------------------------------------------
@@ -1089,6 +795,8 @@ function renderNotificationBell() {
           price: Number(s.price),
           day: s.day,
           alertDays: s.alert_days,
+          cycle: s.cycle || "monthly",
+          category: s.category || "other",
           iconUrl: s.icon_url || resolveServiceIconUrl(s.name),
         }));
       }

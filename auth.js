@@ -9,8 +9,31 @@ const currentPage = window.location.pathname
 if (currentPage.includes('index') || currentPage === '/') {
 
   // Listen for auth changes — this fires when Google redirects back
-  supabase.auth.onAuthStateChange((event, session) => {
+  supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
+      const user = session.user
+
+      // Only send welcome email to brand new users
+      const isNewUser = user.created_at === user.last_sign_in_at
+
+      if (isNewUser) {
+        try {
+          await fetch('https://kehustpdddxrdnnxndbj.supabase.co/functions/v1/send-welcome', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlaHVzdHBkZGR4cmRubnhuZGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3OTM1NTgsImV4cCI6MjA4OTM2OTU1OH0.96HSdoCSg_JAnt1WVBoIWiKp01feg6rn-y8apPgl1Z8`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email: user.email,
+              name: user.user_metadata?.full_name
+            })
+          })
+        } catch (err) {
+          console.error('Welcome email failed:', err)
+        }
+      }
+
       window.location.href = 'dashboard.html'
     }
   })
@@ -65,14 +88,6 @@ if (currentPage.includes('dashboard')) {
     if (!user) return
     activeUser = user
     const displayName = getDisplayName(user)
-    const nameEl = document.getElementById('user-name')
-    const avatarEl = document.getElementById('user-avatar')
-
-    if (nameEl) nameEl.textContent = displayName
-    if (avatarEl && user.user_metadata?.avatar_url) {
-      avatarEl.src = user.user_metadata.avatar_url
-      avatarEl.alt = `${displayName} avatar`
-    }
 
     if (profileNameInput) profileNameInput.value = displayName
     if (profileEmailInput) profileEmailInput.value = user.email || ''
