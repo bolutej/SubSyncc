@@ -1048,6 +1048,23 @@
       transition: opacity 0.2s, transform 0.15s;
     }
     .btn-save:hover { opacity: 0.9; transform: translateY(-1px); }
+    .delete-modal-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+    .delete-modal-text strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+    .delete-modal .btn-save {
+      background: #f87171;
+      color: #fff;
+    }
+    .delete-modal .btn-save:hover {
+      background: #ef4444;
+      opacity: 1;
+    }
 
     /* ── FOOTER ── */
     footer {
@@ -1272,6 +1289,20 @@
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-save" onclick="addSubscription()">Add Subscription</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="delete-modal-overlay" aria-hidden="true">
+  <div class="modal delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+    <div class="modal-title" id="delete-modal-title">Delete subscription?</div>
+    <p class="delete-modal-text">
+      Are you sure you want to delete <strong id="delete-modal-service">this subscription</strong>?
+      This action cannot be undone.
+    </p>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="delete-modal-cancel" type="button">Cancel</button>
+      <button class="btn-save" id="delete-modal-confirm" type="button">Delete</button>
     </div>
   </div>
 </div>

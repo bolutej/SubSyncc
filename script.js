@@ -12,6 +12,7 @@ const knownServiceDomains = {
 };
 let subscriptions = [];
 let spendingChartInstance = null;
+let pendingDeleteSubscription = null;
 const themeStorageKey = "subtrack-theme";
 const seenNotificationsStorageKey = "subtrack-seen-notifications";
 const currencyFormatter = new Intl.NumberFormat("en-NG", {
@@ -136,10 +137,60 @@ async function addSubscription() {
 // -----------------------------------------------------------
 // 5. DELETE SUBSCRIPTION
 // -----------------------------------------------------------
-async function deleteSubscription(id) {
-  await window.dbFunctions.deleteSubscriptionDB(id);
-  subscriptions = subscriptions.filter((s) => s.id !== id);
-  renderAll();
+function openDeleteModal(id, name) {
+  const overlay = document.getElementById("delete-modal-overlay");
+  const serviceNameEl = document.getElementById("delete-modal-service");
+  if (!overlay || !id) return;
+
+  pendingDeleteSubscription = {
+    id,
+    name: String(name || "this subscription"),
+  };
+
+  if (serviceNameEl) {
+    serviceNameEl.textContent = pendingDeleteSubscription.name;
+  }
+
+  overlay.classList.add("open");
+  overlay.setAttribute("aria-hidden", "false");
+}
+
+function closeDeleteModal() {
+  const overlay = document.getElementById("delete-modal-overlay");
+  if (!overlay) return;
+  overlay.classList.remove("open");
+  overlay.setAttribute("aria-hidden", "true");
+  pendingDeleteSubscription = null;
+}
+
+async function confirmDeleteSubscription() {
+  const confirmBtn = document.getElementById("delete-modal-confirm");
+  const pendingId = pendingDeleteSubscription?.id;
+  if (!pendingId) {
+    closeDeleteModal();
+    return;
+  }
+
+  const originalConfirmLabel = confirmBtn?.textContent || "Delete";
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Deleting...";
+  }
+
+  try {
+    await window.dbFunctions.deleteSubscriptionDB(pendingId);
+    subscriptions = subscriptions.filter((s) => s.id !== pendingId);
+    closeDeleteModal();
+    renderAll();
+  } catch (error) {
+    console.error("Delete subscription failed:", error);
+    alert("Could not delete subscription. Please try again.");
+  } finally {
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = originalConfirmLabel;
+    }
+  }
 }
 
 // -----------------------------------------------------------
@@ -488,7 +539,7 @@ function renderSubList() {
           <div class="sub-date">Renews ${dateStr}</div>
         </div>
         <div class="sub-price">${formatCurrency(s.price)}</div>
-        <button class="delete-btn" onclick='deleteSubscription(${JSON.stringify(s.id)})' aria-label="Delete ${escapeHTML(s.name)}">&times;</button>
+        <button class="delete-btn" onclick='openDeleteModal(${JSON.stringify(s.id)}, ${JSON.stringify(s.name)})' aria-label="Delete ${escapeHTML(s.name)}">&times;</button>
       </div>`;
     })
     .join("");
@@ -566,6 +617,9 @@ function initUiBindings() {
   const notifCloseBtn = document.getElementById("notif-close-btn");
   const notifMarkAllBtn = document.getElementById("notif-mark-all-btn");
   const notifList = document.getElementById("notif-list");
+  const deleteModalOverlay = document.getElementById("delete-modal-overlay");
+  const deleteModalCancel = document.getElementById("delete-modal-cancel");
+  const deleteModalConfirm = document.getElementById("delete-modal-confirm");
 
   if (notifBtn && notifModalOverlay) {
     const openNotifications = () => {
@@ -641,6 +695,28 @@ function initUiBindings() {
     dateInput.addEventListener("input", syncDay);
     syncDay();
   }
+
+  if (deleteModalCancel) {
+    deleteModalCancel.addEventListener("click", closeDeleteModal);
+  }
+
+  if (deleteModalConfirm) {
+    deleteModalConfirm.addEventListener("click", confirmDeleteSubscription);
+  }
+
+  if (deleteModalOverlay) {
+    deleteModalOverlay.addEventListener("click", (event) => {
+      if (event.target === deleteModalOverlay) {
+        closeDeleteModal();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && deleteModalOverlay?.classList.contains("open")) {
+      closeDeleteModal();
+    }
+  });
 }
 
 function renderNotificationBell() {
